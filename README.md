@@ -25,4 +25,22 @@ Restart db service
 ## Format
 `npm run format`
 
-##
+## Screenshot
+<p align="center">
+    <img src="https://github.com/dudzzzzz/lms/blob/main/screen/LMS_01_login.png?raw=true">
+</p>
+<p align="center">
+    <img src="https://github.com/dudzzzzz/lms/blob/main/screen/LMS_02_admin_dashboard.png?raw=true">
+</p>
+<p align="center">
+    <img src="https://github.com/dudzzzzz/lms/blob/main/screen/LMS_10_admin_course_list.png?raw=true">
+</p>
+<p align="center">
+    <img src="https://github.com/dudzzzzz/lms/blob/main/screen/LMS_12_admin_course_detail.png?raw=true">
+</p>
+<p align="center">
+    <img src="https://github.com/dudzzzzz/lms/blob/main/screen/LMS_18_admin_calendar.png?raw=true">
+</p>
+<p align="center">
+    <img src="https://github.com/dudzzzzz/lms/blob/main/screen/LMS_19_admin_attendance_list.png?raw=true">
+</p>
