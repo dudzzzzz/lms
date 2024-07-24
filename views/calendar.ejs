@@ -1,0 +1,93 @@
+<style>
+:root {
+        --fc-today-bg-color: #cfe2ff;
+ }
+ .fc .fc-daygrid-event{
+    margin-top: 10px;
+}
+
+.fc-daygrid-day-number{
+    font-size: large;
+
+ }
+
+ .fc-daygrid-day-number:hover{
+    text-decoration: none;
+ }
+
+</style>
+
+<div class="p-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+        <li class="breadcrumb-item active">Calendar</li>
+    </ol>
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Timetable</h4>
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.14/index.global.min.js"></script>
+<script>
+    $(document).ready(() => {
+        const calendar = new FullCalendar.Calendar($('#calendar').get(0), {
+            initialView: 'dayGridMonth',
+            initialDate: new Date(),
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay',
+            },
+            events: async (fetchInfo, successCallback, failureCallback) => {
+                await axios.get('/api/calendar/events').then(({ data: response }) => {
+                    console.log('response', response)
+                    if (response.success) {
+                        const courses = response.data
+
+                        const events = courses
+                            .map(course => {
+                                const startDate = moment(course.startDate)
+                                const endDate = moment(course.endDate)
+                                const excludeDates = course.excludeDates
+                                    ? course.excludeDates.map(date =>
+                                            moment(date).format('YYYY-MM-DD')
+                                        )
+                                    : []
+                                let dates = []
+
+                                while (startDate.isSameOrBefore(endDate)) {
+                                    if (
+                                        !excludeDates.includes(
+                                            startDate.format('YYYY-MM-DD')
+                                        )
+                                    ) {
+                                        dates.push({
+                                            title: course.name,
+                                            start: startDate.format(
+                                                'YYYY-MM-DD'
+                                            ),
+                                            allDay: true,
+                                            backgroundColor: course.color, // color course
+                                            borderColor: course.color, // border color
+                                            textColor: course.titleColor, // Set the event text color
+                                        })
+                                    }
+                                    startDate.add(1, 'days')
+                                }
+                                return dates
+                            })
+                            .flat()
+
+                        successCallback(events)
+                    } else {
+                        failureCallback(response.message)
+                    }
+                })
+            },
+        })
+        calendar.render()
+    })
+</script>
+<%- contentFor('title') %>Calendar

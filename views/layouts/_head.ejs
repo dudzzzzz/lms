@@ -1,0 +1,145 @@
+<title><%- defineContent('title') ? defineContent('title') : 'LMS' %></title>
+
+<link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+/>
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+/>
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css"
+/>
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+/>
+<link
+    rel="stylesheet"
+    href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css"
+/>
+
+<link rel="stylesheet" href="/style/main.css"/>
+
+<link rel="icon" type="image/x-icon" href="/images/lms_favicon.png">
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script src="/js/scripts.js"></script>
+
+<style>
+    body {
+        display: flex;
+        margin: 0;
+        background: #f9f9f9;
+    }
+    .hide {
+        display: none;
+    }
+</style>
+<script>
+    axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
+    $.ajaxSetup({
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    })
+    /*
+    ** Funtion
+    */
+    $.getUrlParameter = (...params) => {
+        let url, pathname
+        switch (params.length) {
+            case 1: {
+                url = window.location.href
+                pathname = params[0]
+                break
+            }
+            case 2: {
+                url = params[0]
+                pathname = params[1]
+                break
+            }
+        }
+        const pattern = new URLPattern({ pathname })
+        return pattern.exec(url).pathname.groups
+    }
+    $.getFormData = form => {
+        const data = $(`${form} [name]`)
+            .toArray()
+            .reduce(
+                (result, elem) => {
+                    elem = $(elem)
+                    return {
+                        ...result,
+                        [elem.prop('name')]: elem.val(),
+                    }
+                },
+                {}
+            )
+        console.log('getFormData', data)
+        return data
+    }
+    $.setFormData = (formName, data = {}) => {
+        const form = $(formName)
+        let debug = []
+        for (const key in data) {
+            const elem = form.find(`[name=${key}]`)
+            if (elem.length <= 0) continue
+            let value = data[key]
+            if (typeof value === 'function') {
+                value(elem)
+            } else {
+                elem.val(value)
+            }
+            debug.push({ elem, key, value })
+        }
+        console.log('setFormData', debug)
+    }
+    $.cloneTemplate = (selector, data = {}, options = {}) => {
+        const {
+            insert = true,
+            html = false,
+            role = '',
+            show = [],
+        } = options
+
+        let elem = $(selector).clone().html()
+        if (!elem) {
+            console.log(`[cloneTemplate] selector not found: ${selector}`)
+            return
+        }
+
+        // set data value
+        for (const key in data) {
+            elem = elem.replaceAll(`\${${key}}`, data[key])
+        }
+
+        // option handle
+        let temp = $('<div></div>').append(elem)
+
+        if (role) {
+            temp.find(`.${role}`).removeClass('hide')
+        }
+        show.forEach(className => {
+            temp.find(`.${className}`).removeClass('hide')
+        })
+
+        // output
+        if (insert) {
+            $(selector).before(temp.children())
+        } else if (html) {
+            return temp.html()
+        }
+        return $(temp.children())
+    }
+</script>

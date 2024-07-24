@@ -1,0 +1,100 @@
+<style>
+    .bar-color {
+        background-color: rgba(255, 255, 2555, 0.5);
+    }
+    .course {
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+    }
+    .course .content {
+        flex: 1;
+        overflow-y: scroll;
+        scrollbar-width: none;
+    }
+</style>
+
+<div class="card">
+    <div class="course card-body">
+        <h4 class="card-title">My Course</h4>
+        <div class="content">
+            <template id="courseItem">
+                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50 mb-5 mb-xl-10 darker-color" style="background-color: ${color}">
+                    <div class="card-header pt-5" style="color: ${titleColor};">
+                        <div class="card-title d-flex flex-column">   
+                            <span>Class Duration: <b>${startDate} to ${endDate}</b></span>
+                            <h4 class="py-3">${name}</h4>
+                        </div>
+                        <!--list the by Date?-->     
+                        <div class="rounded bar-color" style="padding:10px; color: ${titleColor};">
+                            <span class="pr-5 pl-4 fa-solid fa-calendar-days" data-toggle="tooltip" data-bs-placement="top" title="Class Days"> ${diffDays}</span>
+                            <span class="pr-5 fa-solid fa-file-pen" data-toggle="tooltip" data-bs-placement="top" title="No. of Assignments"></span>
+                            <span class="pr-5 fa-solid fa-user" data-toggle="tooltip" data-bs-placement="top" title="No. of Students"> ${students}</span>
+                            <!--different role, different view-->
+                            <a href="/course/detail/${id}" class="btn btn-secondary" data-toggle="tooltip" data-bs-placement="top" title="Check it out" style="border:0;background-color: ${titleColor}; color: ${color};">Course Detail</a>
+                        </div>   
+                    </div>           
+                </div>
+            </template>
+        </div>
+</style>
+
+<script>
+$(document).ready(() => {
+    $("body").tooltip({ selector: '[data-toggle=tooltip]' });
+
+    const fetchCourses = user => {
+        axios.get('/api/course/').then(({ data: response }) => {
+            console.log('response - course', response); // debug line
+            if (!response.success) return;
+
+            response.data.forEach(course => {
+                const elem = $.cloneTemplate('#courseItem', {
+                    id: course._id,
+                    name: course.name,
+                    teacher: course.teacher.name,
+                    students: course.students.length,
+                    diffDays: calculateDiffDays(course),
+                    startDate: moment(course.startDate).format('DD/MM/YYYY'),
+                    endDate: moment(course.endDate).format('DD/MM/YYYY'),
+                    color: course.color, //color course
+                    titleColor: course.titleColor, //titleColor
+                }, {
+                    insert: false
+                });
+
+                let courseDetailLink = `/course/detail/${course._id}`;
+                if (user.role === 'student') {
+                    courseDetailLink = `/course/student/${course._id}`;
+                }
+                elem.find('.btn-secondary').attr('href', courseDetailLink);
+
+                $('#courseItem').before(elem);
+
+                fetchAssignmentCount(course._id, elem);
+            });
+        })
+    }
+
+    const fetchAssignmentCount = (courseId, elem) => {
+        axios.get(`/api/assignment/count/${courseId}`).then(({ data: response }) => {
+            console.log('response - assignment', response); // debug line
+            if (!response.success) return
+
+            // assignment count
+            elem.find('.fa-file-pen').text(` ${response.data.count}`);
+        })
+    }
+
+    const calculateDiffDays = course => {
+        const startDate = moment(course.startDate).startOf('day')
+        const endDate = moment(course.endDate).endOf('day')
+        const diffDays = Math.ceil(endDate.diff(startDate, 'days', true)) - course.excludeDates.length
+        return diffDays;
+    }
+
+    $(document).on('userInfoEvent', (event, user) => {
+        fetchCourses(user);
+    });
+});
+</script>

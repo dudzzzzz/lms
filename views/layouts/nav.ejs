@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+<head>
+    <%- include('_head.ejs') %>
+    <style>
+        #menu {
+            flex: 0 0 200px;
+            min-height: 100vh;
+        }
+        nav.main {
+            flex-direction: column;
+            padding: 12px;
+            position: sticky;
+            top: 0;
+        }
+        nav.main hr {
+            border-color: #bfbfbf;
+        }
+        nav.main .logo {
+           display: flex;
+           align-items: center;
+        }
+        nav.main .logo i {
+           font-size: 30px;
+        }
+        #page {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            padding: 0 8px;
+            display: flex;
+            justify-content: end;
+            gap: 12px;
+            background: #fff;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        main {
+            flex: 1;
+        }
+        .userInfo .box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .userInfo .box::after {
+            content: none;
+        }
+        .userInfo .icon {
+            width: 30px;
+            height: 30px;
+            font-size: 30px;
+        }
+        .userInfo .info {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+        }
+        .userInfo .role {
+            font-size: 12px;
+            color: #797979;
+        }
+        .nav-item .siteTitle{
+            font-size: 14px;
+        }
+        .nav-link:not(.active):hover {
+            background-color: #616161;
+            transition: all .25s;
+        }
+
+        .systemName{
+            font-size: 18px;
+        }
+
+    </style>
+    <script>
+        $(document).ready(() => {
+            const navList = [
+                { text: 'Dashboard', path: '/dashboard', access: ['admin', 'teacher', 'student'], icon: 'fa-solid fa-gauge-high' },
+                { text: 'User', path: '/user', access: ['admin'], icon: 'fa-solid fa-user' },
+                { text: 'Announcement', path: '/announcement', access: ['admin'], icon: 'fa-solid fa-bullhorn' },
+                { text: 'Course', path: '/course', access: ['admin', 'teacher', 'student'], icon: 'fa-solid fa-book' },
+                { text: 'Calendar', path: '/calendar', access: ['admin', 'teacher', 'student'], icon: 'fa-solid fa-calendar-days' },
+                { text: 'Attendance', path: '/attendance', access: ['admin', 'teacher'], icon: 'fa-solid fa-calendar-check' },
+            ]
+            axios.get('/api/user/info').then(({ data: response }) => {
+                console.log('response', response)
+                if (!response.success) {
+                    return window.location.href = '/'
+                }
+                const user = response.data
+
+                // set nav
+                navList.forEach(nav => {
+                    if (!nav.access.includes(user.role)) return
+                    $.cloneTemplate('#navItem', {
+                        ...nav,
+                        active: window.location.pathname.startsWith(nav.path) ? 'active' : ''
+                    })
+                })
+
+                // set header
+                $.cloneTemplate('#userInfo', {
+                    ...user,
+                    role: _.upperFirst(user.role)
+                })
+
+                // display block by role 
+                $(`.${user.role}`).removeClass('hide')
+
+                // trigger event if other needed user info
+                $(document).trigger('userInfoEvent', user)
+            })
+
+            $(document).on('click', '.logout', event => {
+                localStorage.clear()
+                window.location.href = '/'
+            })
+        })
+    </script>
+    <%- style %>
+    <%- script %>
+</head>
+
+<body>
+    <div id="menu" class="bg-dark">
+        <nav class="main text-white">
+            <a href="/dashboard" class="logo text-white text-decoration-none ">
+                <!-- <i class="fa-solid fa-graduation-cap mr-3"></i> -->
+                <img src="/images/lms_favicon.png" class="ifa-solid fa-graduation-cap mr-3" style="width:30px;">
+                <h5 class="m-0 systemName">LMS</h5>
+            </a>
+            <hr class="text-white">
+            <ul class="nav nav-pills flex-column mb-auto">
+                <template id="navItem">
+                    <li class="nav-item">
+                        <a href="${path}" class="nav-link text-white ${active}">
+                            <i class="mr-2 ${icon}"></i>
+                          <span class="siteTitle"> ${text} </span>
+                        </a>
+                    </li>
+                </template>
+            </ul>
+        </nav>
+        <!-- <nav class="main text-white bg-dark">
+            <a href="/dashboard" class="logo text-white text-decoration-none">
+            <span class="d-flex justify-content-center align-items-center"> <i class="fa-solid fa-graduation-cap mr-3"></i>
+                <h5 class="m-0">LMS</h5></span>
+            </a>
+            <hr class="text-white">
+            <ul class="nav nav-pills flex-column mb-auto">
+                <template id="navItem">
+                    <li class="nav-item">
+                        <a href="${path}" class="nav-link text-white ${active}">
+                            <i class="mr-2 ${icon}"></i>
+                            ${text}
+                        </a>
+                    </li>
+                </template>
+            </ul>
+        </nav> -->
+    </div>
+    <div id="page">
+        <header>
+            <template id="userInfo">
+                <div class="userInfo dropdown">
+                    <button class="box btn dropdown-toggle" type="button" data-toggle="dropdown">
+                        <i class="icon fa-solid fa-circle-user"></i>
+                        <div class="info">
+                            <strong class="name">${name}</strong>
+                            <div class="role">${role}</div>
+                        </div>
+                    </button>
+                    <div class="menu dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-item disabled">${email}</div>
+                        <button class="dropdown-item active logout" type="button">Logout</button>
+                    </div>
+                </div>
+            </template>
+        </header>
+        <main><%- body %></main>
+    </div>
+
+
+    <!-- Modal: confirm-->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!--confirm message-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmModalYes">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: alert-->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alertModalLabel">Alert</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!--alert message-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="alertModalOk">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+<div class="p-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+        <li class="breadcrumb-item"><a href="/announcement">Announcement</a></li>
+        <li class="breadcrumb-item active">Add</li>
+    </ol>
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Add Announcement</h4>
+            <form id="addAnnouncementForm">
+                <div class="form-group">
+                    <label for="content">Content:</label>
+                    <textarea
+                        class="form-control"
+                        name="content"
+                        rows="3"
+                    ></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="teacher">To:</label>
+                    <select class="form-control" name="to" required>
+                        <option value="all">All</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="student">Student</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(() => {
+        $('#addAnnouncementForm').on('submit', event => {
+            event.preventDefault()
+            const data = $.getFormData('#addAnnouncementForm')
+            axios.post('/api/announcement/add', data).then(({ data: response }) => {
+                console.log('response', response)
+                if (!response.success) return
+                window.location.href = '/announcement'
+            })
+        })
+    })
+</script>
+<%- contentFor('title') %>Add Announcement

@@ -1,0 +1,39 @@
+{
+  "name": "erb_lms",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon --import=specifier-resolution-node/register app.js",
+    "start": "node --import=specifier-resolution-node/register app.js",
+    "format": "npx prettier --plugin=prettier-plugin-ejs . --write",
+    "resetdb": "node --import=specifier-resolution-node/register ./db/reset"
+  },
+  "imports": {
+    "#root/*": "./*"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
+    "bson": "^6.8.0",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-file-routing": "^3.0.3",
+    "fs-extra": "^11.2.0",
+    "http-errors": "~1.6.3",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "moment": "^2.30.1",
+    "mongoose": "^8.4.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "specifier-resolution-node": "^1.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3",
+    "prettier-plugin-ejs": "^1.0.3"
+  }
+}
